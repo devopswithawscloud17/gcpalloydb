@@ -1,0 +1,72 @@
+name: GCP AlloyDB Terraform
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Select environment
+        required: true
+        type: choice
+        options: [dev, qa, prod]
+      action:
+        description: Select Terraform action
+        required: true
+        type: choice
+        options: [plan, apply, destroy, refresh-only]
+      confirm_destroy:
+        description: Type DESTROY for destroy operations
+        required: false
+        type: string
+permissions:
+  contents: read
+  id-token: write
+  pull-requests: write
+concurrency:
+  group: alloydb-${{ inputs.environment }}
+  cancel-in-progress: false
+env:
+  TF_IN_AUTOMATION: "true"
+  TF_INPUT: "false"
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with: { terraform_version: "1.12.2" }
+      - run: terraform fmt -check -recursive
+      - run: terraform init -backend=false
+      - run: terraform validate
+
+  deploy:
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_TERRAFORM_SERVICE_ACCOUNT }}
+      - uses: hashicorp/setup-terraform@v3
+        with: { terraform_version: "1.12.2" }
+      - name: Initialize remote state
+        run: terraform init -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" -backend-config="prefix=alloydb/${{ inputs.environment }}"
+      - name: Plan
+        if: inputs.action == 'plan' || inputs.action == 'apply'
+        run: terraform plan -var-file="environments/${{ inputs.environment }}.tfvars" -out=tfplan
+      - name: Apply
+        if: inputs.action == 'apply'
+        run: terraform apply -auto-approve tfplan
+      - name: Refresh-only
+        if: inputs.action == 'refresh-only'
+        run: terraform apply -refresh-only -auto-approve -var-file="environments/${{ inputs.environment }}.tfvars"
+      - name: Validate destroy confirmation
+        if: inputs.action == 'destroy'
+        shell: bash
+        run: test "${{ inputs.confirm_destroy }}" = "DESTROY"
+      - name: Destroy plan
+        if: inputs.action == 'destroy'
+        run: terraform plan -destroy -var-file="environments/${{ inputs.environment }}.tfvars" -out=destroy.tfplan
+      - name: Destroy
+        if: inputs.action == 'destroy'
+        run: terraform apply -auto-approve destroy.tfplan

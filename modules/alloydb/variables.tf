@@ -41,9 +41,15 @@ variable "dr_instance_id" {
 variable "primary_cpu_count" {
   type = number
 }
+variable "primary_machine_type" {
+  type = string
+}
 
 variable "read_pool_cpu_count" {
   type = number
+}
+variable "read_pool_machine_type" {
+  type = string
 }
 
 variable "read_pool_node_count" {
@@ -52,6 +58,9 @@ variable "read_pool_node_count" {
 
 variable "dr_cpu_count" {
   type = number
+}
+variable "dr_machine_type" {
+  type = string
 }
 
 variable "database_version" {

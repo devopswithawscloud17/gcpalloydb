@@ -82,7 +82,8 @@ resource "google_alloydb_instance" "primary" {
   instance_type     = "PRIMARY"
   availability_type = "REGIONAL"
   machine_config {
-    cpu_count = var.primary_cpu_count
+    machine_type = var.primary_machine_type
+    cpu_count    = var.primary_cpu_count
   }
   database_flags = {
     "alloydb.enable_pgaudit" = "on"
@@ -102,7 +103,8 @@ resource "google_alloydb_instance" "read_pool" {
     node_count = var.read_pool_node_count
   }
   machine_config {
-    cpu_count = var.read_pool_cpu_count
+    machine_type = var.read_pool_machine_type
+    cpu_count    = var.read_pool_cpu_count
   }
   labels     = var.labels
   depends_on = [google_alloydb_instance.primary]
@@ -173,7 +175,8 @@ resource "google_alloydb_instance" "dr" {
   instance_type     = "SECONDARY"
   availability_type = "REGIONAL"
   machine_config {
-    cpu_count = var.dr_cpu_count
+    machine_type = var.dr_machine_type
+    cpu_count    = var.dr_cpu_count
   }
   labels = var.labels
 }

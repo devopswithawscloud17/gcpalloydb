@@ -43,9 +43,12 @@ module "alloydb" {
   read_pool_instance_id                  = "${var.read_pool_instance_id}-${var.environment}"
   dr_instance_id                         = "${var.dr_instance_id}-${var.environment}"
   primary_cpu_count                      = var.primary_cpu_count
+  primary_machine_type                   = var.primary_machine_type
   read_pool_cpu_count                    = var.read_pool_cpu_count
+  read_pool_machine_type                 = var.read_pool_machine_type
   read_pool_node_count                   = var.read_pool_node_count
   dr_cpu_count                           = var.dr_cpu_count
+  dr_machine_type                        = var.dr_machine_type
   database_version                       = var.database_version
   initial_user                           = var.initial_user
   initial_password                       = var.initial_password

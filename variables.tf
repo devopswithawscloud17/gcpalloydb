@@ -42,9 +42,17 @@ variable "primary_cpu_count" {
   type    = number
   default = 4
 }
+variable "primary_machine_type" {
+  type    = string
+  default = "n2-highmem-4"
+}
 variable "read_pool_cpu_count" {
   type    = number
   default = 4
+}
+variable "read_pool_machine_type" {
+  type    = string
+  default = "n2-highmem-4"
 }
 variable "read_pool_node_count" {
   type    = number
@@ -53,6 +61,10 @@ variable "read_pool_node_count" {
 variable "dr_cpu_count" {
   type    = number
   default = 4
+}
+variable "dr_machine_type" {
+  type    = string
+  default = "n2-highmem-4"
 }
 variable "database_version" {
   type    = string

@@ -1,4 +1,4 @@
-project_id                             = "REPLACE_WITH_QA_PROJECT_ID"
+project_id                             = "project-dba-48524"
 environment                            = "qa"
 primary_region                         = "asia-south1"
 dr_region                              = "asia-south2"
@@ -15,7 +15,7 @@ initial_password                       = "chakrika"
 continuous_backup_recovery_window_days = 14
 automated_backup_retention_count       = 14
 enable_cmek                            = true
-enable_dr                              = true
+enable_dr                              = false
 enable_deletion_protection             = false
 notification_email                     = "alloydb-operations@example.com"
 labels = {

@@ -1,6 +1,6 @@
 resource "google_kms_key_ring" "primary" {
   project  = var.project_id
-  name     = "${var.name_prefix}-primary-keyring6"
+  name     = "${var.name_prefix}-primary-keyring7"
   location = var.primary_region
 }
 resource "google_kms_crypto_key" "primary" {

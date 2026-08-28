@@ -15,6 +15,27 @@ Production-oriented baseline for AlloyDB with a regional HA primary, read pool, 
 4. GitHub Environments named `dev`, `qa`, `prod`, `qa-dr`, and `prod-dr`; configure required reviewers for manual approvals.
 5. Secrets in each GitHub Environment: `GCP_WIF_PROVIDER`, `GCP_TERRAFORM_SERVICE_ACCOUNT`, and `TF_STATE_BUCKET`.
 
+### Grant GitHub Actions service-account impersonation
+
+Before running the workflow, grant the GitHub repository's WIF principal permission to impersonate the Terraform service account. The `roles/iam.workloadIdentityUser` role includes the `iam.serviceAccounts.getAccessToken` permission required by `google-github-actions/auth` during `terraform init`.
+
+Set these values for the Google Cloud project that owns the WIF pool and service account:
+
+```bash
+PROJECT_ID=YOUR_PROJECT_ID
+POOL_ID=YOUR_WORKLOAD_IDENTITY_POOL_ID
+TF_SERVICE_ACCOUNT=YOUR_TERRAFORM_SERVICE_ACCOUNT_EMAIL
+REPOSITORY=devopswithawscloud17/gcpalloydb
+
+PROJECT_NUMBER=$(gcloud projects describe "$PROJECT_ID" --format='value(projectNumber)')
+gcloud iam service-accounts add-iam-policy-binding "$TF_SERVICE_ACCOUNT" \
+	--project="$PROJECT_ID" \
+	--role=roles/iam.workloadIdentityUser \
+	--member="principalSet://iam.googleapis.com/projects/${PROJECT_NUMBER}/locations/global/workloadIdentityPools/${POOL_ID}/attribute.repository/${REPOSITORY}"
+```
+
+`GCP_WIF_PROVIDER` must reference the same pool, for example `projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/POOL_ID/providers/PROVIDER_ID`. Confirm that `GCP_TERRAFORM_SERVICE_ACCOUNT` is the email of the service account receiving the binding. The Terraform service account also needs permission to read and write objects in `TF_STATE_BUCKET` (for example, `roles/storage.objectAdmin` scoped to that bucket).
+
 ## Local use
 ```bash
 terraform fmt -recursive

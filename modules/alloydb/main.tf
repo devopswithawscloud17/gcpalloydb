@@ -3,6 +3,11 @@ resource "random_password" "db_password" {
   special = true
 }
 
+locals {
+  preferred_backup_time      = split(":", var.preferred_backup_start_time)
+  preferred_maintenance_time = split(":", var.preferred_maintenance_start_time)
+}
+
 resource "google_alloydb_cluster" "primary" {
   project             = var.project_id
   cluster_id          = var.primary_cluster_id
@@ -13,11 +18,11 @@ resource "google_alloydb_cluster" "primary" {
 
   maintenance_update_policy {
     maintenance_windows {
-      day = "SUNDAY"
+      day = var.preferred_maintenance_day
 
       start_time {
-        hours   = 20
-        minutes = 30
+        hours   = tonumber(local.preferred_maintenance_time[0])
+        minutes = tonumber(local.preferred_maintenance_time[1])
         seconds = 0
         nanos   = 0
       }
@@ -32,8 +37,15 @@ resource "google_alloydb_cluster" "primary" {
     }
   }
 
-  network_config {
-    network = var.network_id
+  dynamic "network_config" {
+    for_each = var.psc_enabled ? [] : [1]
+    content {
+      network = var.network_id
+    }
+  }
+
+  psc_config {
+    psc_enabled = var.psc_enabled
   }
 
   dynamic "encryption_config" {
@@ -55,14 +67,17 @@ resource "google_alloydb_cluster" "primary" {
   automated_backup_policy {
     enabled       = true
     location      = var.primary_region
-    backup_window = "3600s"
+    backup_window = "${var.backup_window_seconds}s"
     time_based_retention {
       retention_period = "${var.automated_backup_retention_count * 86400}s"
     }
     weekly_schedule {
       days_of_week = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"]
       start_times {
-        hours = var.backup_start_hour
+        hours   = tonumber(local.preferred_backup_time[0])
+        minutes = tonumber(local.preferred_backup_time[1])
+        seconds = 0
+        nanos   = 0
       }
     }
     dynamic "encryption_config" {
@@ -132,14 +147,17 @@ resource "google_alloydb_cluster" "dr" {
   automated_backup_policy {
     enabled       = true
     location      = var.dr_region
-    backup_window = "3600s"
+    backup_window = "${var.backup_window_seconds}s"
     time_based_retention {
       retention_period = "${var.automated_backup_retention_count * 86400}s"
     }
     weekly_schedule {
       days_of_week = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"]
       start_times {
-        hours = var.backup_start_hour
+        hours   = tonumber(local.preferred_backup_time[0])
+        minutes = tonumber(local.preferred_backup_time[1])
+        seconds = 0
+        nanos   = 0
       }
     }
     dynamic "encryption_config" {

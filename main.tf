@@ -15,7 +15,10 @@ module "project_services" {
 module "network" {
   source       = "./modules/network"
   project_id   = var.project_id
-  network_name = "${var.network_name}-${var.environment}"
+  region       = var.primary_region
+  network_name = var.network_name
+  subnet_name  = var.subnet_name
+  subnet_cidr  = var.subnet_cidr
   depends_on   = [module.project_services]
 }
 
@@ -54,8 +57,11 @@ module "alloydb" {
   initial_password                       = var.initial_password
   continuous_backup_recovery_window_days = var.continuous_backup_recovery_window_days
   automated_backup_retention_count       = var.automated_backup_retention_count
-  backup_start_hour                      = var.backup_start_hour
-  primary_kms_key_name                   = var.enable_cmek ? module.kms[0].primary_key_id : null
+  preferred_backup_start_time            = var.preferred_backup_start_time
+  backup_window_seconds                  = var.backup_window_seconds
+  preferred_maintenance_day              = var.preferred_maintenance_day
+  preferred_maintenance_start_time       = var.preferred_maintenance_start_time
+  psc_enabled                            = var.psc_enabled
   dr_kms_key_name                        = var.enable_cmek && var.enable_dr ? module.kms[0].dr_key_id : null
   enable_dr                              = var.enable_dr
   enable_deletion_protection             = var.enable_deletion_protection

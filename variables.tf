@@ -16,7 +16,17 @@ variable "dr_region" {
 }
 variable "network_name" {
   type    = string
-  default = "alloydb-vpc"
+  default = "custome-vpc-ai"
+}
+variable "subnet_name" {
+  type = string
+}
+variable "subnet_cidr" {
+  type = string
+}
+variable "psc_enabled" {
+  type    = bool
+  default = true
 }
 variable "primary_cluster_id" {
   type    = string
@@ -93,9 +103,29 @@ variable "automated_backup_retention_count" {
   type    = number
   default = 14
 }
-variable "backup_start_hour" {
+variable "preferred_backup_start_time" {
+  type    = string
+  default = "02:00"
+  validation {
+    condition     = can(regex("^([01][0-9]|2[0-3]):00$", var.preferred_backup_start_time))
+    error_message = "preferred_backup_start_time must be an hour-aligned 24-hour time such as 09:00."
+  }
+}
+variable "backup_window_seconds" {
   type    = number
-  default = 2
+  default = 3600
+}
+variable "preferred_maintenance_day" {
+  type    = string
+  default = "SUNDAY"
+}
+variable "preferred_maintenance_start_time" {
+  type    = string
+  default = "20:30"
+  validation {
+    condition     = can(regex("^([01][0-9]|2[0-3]):[0-5][0-9]$", var.preferred_maintenance_start_time))
+    error_message = "preferred_maintenance_start_time must use 24-hour HH:MM format."
+  }
 }
 variable "enable_cmek" {
   type    = bool

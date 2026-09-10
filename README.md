@@ -1,6 +1,6 @@
 # GCP AlloyDB PostgreSQL Terraform Automation
 
-Production-oriented baseline for AlloyDB with a regional HA primary, read pool, continuous backup/PITR, automated backups, CMEK, private service access, audit logging, Cloud Monitoring, a cross-region secondary cluster, and GitHub Actions.
+Production-oriented baseline for AlloyDB with a regional HA primary, read pool, continuous backup/PITR, automated backups, CMEK, Private Service Connect, audit logging, Cloud Monitoring, a cross-region secondary cluster, and GitHub Actions.
 
 ## Important design decisions
 - No database password is stored in Terraform. Bootstrap database roles separately through an approved secrets workflow.
@@ -44,6 +44,14 @@ terraform validate
 terraform plan -var-file=environments/dev.tfvars
 ```
 
+If Windows resets the connection to the Terraform Registry, initialize with the
+IPv4 bootstrap script. It downloads a 64-bit Terraform binary and providers into
+local ignored directories:
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\init-terraform-ipv4.ps1 -upgrade
+& .\.tools\terraform.exe validate
+```
+
 ## Read pool autoscaling
 The Google Terraform provider exposes a fixed AlloyDB read-pool node count, so
 runtime scaling is handled by `scripts/read-pool-autoscaler.sh`. Terraform
@@ -72,6 +80,6 @@ account needs Monitoring Viewer and AlloyDB Instance Admin permissions.
 6. For production DR, execute and document a controlled switchover test, then reconcile Terraform state.
 
 ## Notes
-- The VPC module creates a dedicated VPC and Private Service Access range. For Shared VPC, replace it with data sources for the host-project network and grant the required service-agent permissions.
+- The network module reads the pre-created VPC and subnet from each environment's tfvars file. AlloyDB Private Service Connect is enabled with `psc_enabled = true`.
 - Adjust CPU counts, retention, regions, labels, flags, alert thresholds, and IAM to organizational standards before production use.
 - Do not run destroy against production unless the approved break-glass changes have removed protection.

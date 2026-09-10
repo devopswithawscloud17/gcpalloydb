@@ -88,8 +88,24 @@ variable "automated_backup_retention_count" {
   type = number
 }
 
-variable "backup_start_hour" {
+variable "preferred_backup_start_time" {
+  type = string
+}
+
+variable "backup_window_seconds" {
   type = number
+}
+
+variable "preferred_maintenance_day" {
+  type = string
+}
+
+variable "preferred_maintenance_start_time" {
+  type = string
+}
+
+variable "psc_enabled" {
+  type = bool
 }
 
 variable "primary_kms_key_name" {

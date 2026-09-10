@@ -3,7 +3,7 @@ variable "project_id" {
 }
 locals {
   services = toset([
-    "alloydb.googleapis.com", "compute.googleapis.com", "servicenetworking.googleapis.com",
+    "alloydb.googleapis.com", "compute.googleapis.com",
     "cloudkms.googleapis.com", "monitoring.googleapis.com", "logging.googleapis.com",
     "iamcredentials.googleapis.com", "sts.googleapis.com"
   ])

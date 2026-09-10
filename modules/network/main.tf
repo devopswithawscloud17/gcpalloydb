@@ -1,19 +1,18 @@
-resource "google_compute_network" "this" {
-  project                 = var.project_id
-  name                    = var.network_name
-  auto_create_subnetworks = false
-  routing_mode            = "GLOBAL"
+data "google_compute_network" "this" {
+  project = var.project_id
+  name    = var.network_name
 }
-resource "google_compute_global_address" "private_service_range" {
-  project       = var.project_id
-  name          = "${var.network_name}-psa"
-  purpose       = "VPC_PEERING"
-  address_type  = "INTERNAL"
-  prefix_length = 16
-  network       = google_compute_network.this.id
+
+data "google_compute_subnetwork" "this" {
+  project = var.project_id
+  region  = var.region
+  name    = var.subnet_name
 }
-resource "google_service_networking_connection" "private_vpc_connection" {
-  network                 = google_compute_network.this.id
-  service                 = "servicenetworking.googleapis.com"
-  reserved_peering_ranges = [google_compute_global_address.private_service_range.name]
+
+check "subnet_cidr_matches" {
+  assert {
+    condition     = data.google_compute_subnetwork.this.ip_cidr_range == var.subnet_cidr
+    error_message = "The existing subnet ${var.subnet_name} does not use CIDR ${var.subnet_cidr}."
+  }
 }
+

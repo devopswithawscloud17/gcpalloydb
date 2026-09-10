@@ -4,6 +4,7 @@ Production-oriented baseline for AlloyDB with a regional HA primary, read pool, 
 
 ## Important design decisions
 - No database password is stored in Terraform. Bootstrap database roles separately through an approved secrets workflow.
+amara ramanjaneyulu
 - Production uses AlloyDB deletion protection. To intentionally remove protected clusters, follow a controlled break-glass change that first disables deletion protection in the environment variables.
 - DR promotion/switchover is an operational action. After promotion, update cluster roles in code and run the supplied refresh-only reconciliation workflow.
 - The included alert is a baseline. Add organization-approved metrics and thresholds after validating metric descriptors in the target project.
